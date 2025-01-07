@@ -1,23 +1,18 @@
 import streamlit as st
+import random
 
-# 점수 저장을 위한 세션 상태 초기화
-if 'score' not in st.session_state:
-    st.session_state['score'] = 0
+# 명언 리스트
+quotes = [
+    "The only limit to our realization of tomorrow is our doubts of today.",
+    "Do what you can, with what you have, where you are.",
+    "Success is not final, failure is not fatal: It is the courage to continue that counts.",
+    "The best time to plant a tree was 20 years ago. The second best time is now.",
+    "It does not matter how slowly you go as long as you do not stop."
+]
 
-# 점수 업데이트 함수
-def update_score():
-    st.session_state['score'] += 1
+# 제목
+st.title("Random Quote Generator")
 
-# 제목 표시
-st.title("Click Game with Streamlit")
-
-# 점수 표시
-st.markdown(f"### Score: {st.session_state['score']}")
-
-# 버튼 클릭 이벤트
-if st.button("Click Me!"):
-    update_score()
-
-# 게임 초기화 버튼
-if st.button("Reset"):
-    st.session_state['score'] = 0
+# 버튼 클릭 시 랜덤 명언 출력
+if st.button("Generate a Quote"):
+    st.write(random.choice(quotes))
