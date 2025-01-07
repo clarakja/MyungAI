@@ -3,3 +3,6 @@
 streamlit
 scikit-learn
 matplotlib
+opencv-python-headless
+pillow
+streamlit-drawable-canvas
