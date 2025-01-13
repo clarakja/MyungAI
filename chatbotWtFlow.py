@@ -101,7 +101,8 @@ def chatbot_app():
 
             if user_input == intent_name:
                 st.session_state['current_intent_id'] = intent_id
-                st.experimental_set_query_params(current_intent_id=intent_id)
+                st.set_query_params(current_intent_id=intent_id)
+                st.experimental_rerun()
                 break
         else:
             st.write("챗봇: 이해하지 못했습니다. 다시 시도해주세요.")
