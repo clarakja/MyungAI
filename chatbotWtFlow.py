@@ -1,7 +1,7 @@
 import sqlite3
 import streamlit as st
 
-# 데이터베이스 초기화
+# 데이터베이스 초기화 함수
 def initialize_database():
     conn = sqlite3.connect('chatbot_scenario.db')
     cursor = conn.cursor()
@@ -74,29 +74,23 @@ def get_response(current_intent_id):
     else:
         return "죄송합니다, 이해하지 못했습니다.", []
 
-# 챗봇 실행
-def chatbot():
+# Streamlit 챗봇 실행 함수
+def chatbot_app():
+    st.title("Streamlit 챗봇")
     initialize_database()
 
-    print("안녕하세요! 챗봇입니다. '종료'를 입력하면 대화를 종료합니다.")
+    if 'current_intent_id' not in st.session_state:
+        st.session_state['current_intent_id'] = 1  # 초기 Intent ID
 
-    while True:
-        current_intent_id = 1  # 시작 Intent
+    response, next_intents = get_response(st.session_state['current_intent_id'])
 
-        while True:
-            response, next_intents = get_response(current_intent_id)
-            print(f"챗봇: {response}")
+    st.write(f"챗봇: {response}")
 
-            user_input = input("사용자: ").strip()
-            if user_input == "종료":
-                print("챗봇: 안녕히 가세요!")
-                return
-
-            if not next_intents:  # 다음 선택지가 없으면 처음으로 돌아감
-                print("챗봇: 처음으로 돌아갑니다.")
-                break
-
-            # 다음 intent로 이동
+    if not next_intents:
+        st.write("챗봇: 대화가 종료되었습니다. 처음으로 돌아가려면 페이지를 새로고침하세요.")
+    else:
+        user_input = st.text_input("사용자 입력", "")
+        if st.button("전송"):
             next_intent_found = False
             for intent_id in next_intents:
                 conn = sqlite3.connect('chatbot_scenario.db')
@@ -106,14 +100,13 @@ def chatbot():
                 conn.close()
 
                 if user_input == intent_name:
-                    current_intent_id = intent_id
+                    st.session_state['current_intent_id'] = intent_id
                     next_intent_found = True
-                    break
+                    st.experimental_rerun()
 
             if not next_intent_found:
-                print("챗봇: 이해하지 못했습니다. 다시 선택해주세요.")
-                continue
+                st.write("챗봇: 이해하지 못했습니다. 다시 시도해주세요.")
 
 # 실행
 if __name__ == "__main__":
-    chatbot()
+    chatbot_app()
