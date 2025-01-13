@@ -5,7 +5,8 @@ import streamlit as st
 def initialize_database():
     conn = sqlite3.connect('chatbot_scenario.db')
     cursor = conn.cursor()
-    # 기존 테이블 삭제 (올바른 동작을 위하여 혹시 남아 있을 잔재를 삭제)
+
+    # 기존 테이블 삭제
     cursor.execute("DROP TABLE IF EXISTS intents")
     cursor.execute("DROP TABLE IF EXISTS flows")
 
@@ -77,7 +78,6 @@ def get_response(current_intent_id):
 # Streamlit 챗봇 실행 함수
 def chatbot_app():
     st.title("Streamlit 챗봇")
-    initialize_database()
 
     if 'current_intent_id' not in st.session_state:
         st.session_state['current_intent_id'] = 1  # 초기 Intent ID
@@ -87,26 +87,26 @@ def chatbot_app():
     st.write(f"챗봇: {response}")
 
     if not next_intents:
-        st.write("챗봇: 대화가 종료되었습니다. 처음으로 돌아가려면 페이지를 새로고침하세요.")
-    else:
-        user_input = st.text_input("사용자 입력", "")
-        if st.button("전송"):
-            next_intent_found = False
-            for intent_id in next_intents:
-                conn = sqlite3.connect('chatbot_scenario.db')
-                cursor = conn.cursor()
-                cursor.execute("SELECT intent FROM Intents WHERE id = ?", (intent_id,))
-                intent_name = cursor.fetchone()[0]
-                conn.close()
+        st.write("챗봇: 대화가 종료되었습니다. 새로 시작하려면 페이지를 새로고침하세요.")
+        return
 
-                if user_input == intent_name:
-                    st.session_state['current_intent_id'] = intent_id
-                    next_intent_found = True
-                    st.experimental_rerun()
+    user_input = st.text_input("사용자 입력:", "")
+    if st.button("전송"):
+        for intent_id in next_intents:
+            conn = sqlite3.connect('chatbot_scenario.db')
+            cursor = conn.cursor()
+            cursor.execute("SELECT intent FROM Intents WHERE id = ?", (intent_id,))
+            intent_name = cursor.fetchone()[0]
+            conn.close()
 
-            if not next_intent_found:
-                st.write("챗봇: 이해하지 못했습니다. 다시 시도해주세요.")
+            if user_input == intent_name:
+                st.session_state['current_intent_id'] = intent_id
+                st.experimental_set_query_params(current_intent_id=intent_id)
+                break
+        else:
+            st.write("챗봇: 이해하지 못했습니다. 다시 시도해주세요.")
 
 # 실행
 if __name__ == "__main__":
-    chatbot_app()
+    initialize_database()  # 데이터베이스 초기화
+    chatbot_app()  # Streamlit 앱 실행
